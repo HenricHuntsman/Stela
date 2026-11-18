@@ -20,11 +20,26 @@ if [[ -n "$(git -C "$mesa" status --porcelain)" ]]; then
     exit 1
 fi
 if [[ ! -f "$patch" ]]; then
-    echo "Missing compatibility patch: $patch" >&2
-    exit 1
+    # Sparse checkouts may leave this tracked file out of the worktree.
+    # Read it from the checked-out commit, without changing the sparse rules.
+    if ! git -C "$root" cat-file -e 'HEAD:patches/fedora/mesa-clang-resource-dir.patch' 2>/dev/null; then
+        echo "Missing compatibility patch in both the checkout and HEAD." >&2
+        exit 1
+    fi
+    mkdir -p -- "$root/.tools/fedora-gpu-host-tools"
+    patch="$root/.tools/fedora-gpu-host-tools/mesa-clang-resource-dir.patch"
+    git -C "$root" show 'HEAD:patches/fedora/mesa-clang-resource-dir.patch' > "$patch"
+    echo 'Loaded tracked Mesa compatibility patch from HEAD (sparse checkout).'
 fi
 
-pkgconf="$(find "$root/.tools/gpu/generators/lib" -type f -path '*/pkgconf/.bin/pkgconf' -print -quit 2>/dev/null || true)"
+pkgconf=''
+# Python virtual environments can install packages under lib or lib64.
+for candidate in "$root"/.tools/gpu/generators/lib*/python*/site-packages/pkgconf/.bin/pkgconf; do
+    if [[ -f "$candidate" && -x "$candidate" ]]; then
+        pkgconf="$candidate"
+        break
+    fi
+done
 if [[ -z "$pkgconf" || ! -x "$pkgconf" ]]; then
     echo 'Bundled pkgconf not found. First install the Stela GPU generator tools.' >&2
     exit 1
