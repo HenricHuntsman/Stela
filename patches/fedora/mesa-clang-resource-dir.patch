@@ -1,0 +1,11 @@
+--- a/src/compiler/clc/meson.build
++++ b/src/compiler/clc/meson.build
+@@ -20,7 +20,7 @@
+     # LLVM 16 changed to only using a major version
+     clang_version_dir = dep_llvm.version().split('.')[0]
+   endif
+-  clang_resource_dir = join_paths(llvm_libdir, 'clang', clang_version_dir, 'include')
++  clang_resource_dir = join_paths(run_command(find_program('clang'), '-print-resource-dir', check: true).stdout().strip(), 'include')
+ 
+   opencl_c_base_h = custom_target(
+     'opencl-c-base.h',
