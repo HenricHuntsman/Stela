@@ -21,17 +21,20 @@ The `scripts/fedora-gpu-host-tools.sh` wrapper:
 
 1. Refuses to run if the Mesa submodule contains changes.
 2. Locates the already-installed bundled `pkgconf`, and checks Clang's headers and the necessary .pc packages.
-3. Creates a shim beneath the ignored `.tools` tree.
-4. Applies `patches/fedora/mesa-clang-resource-dir.patch` temporarily, runs the specified command, then reverses the patch at exit.
+3. Locates the bundled `pkgconf` in Python virtualenv `lib` or `lib64`, and creates a shim beneath the ignored `.tools` tree.
+4. If a sparse checkout omitted the tracked patch, reads that patch from `HEAD` into `.tools` without changing sparse settings.
+5. Applies the Mesa patch temporarily, runs the specified command, then reverses the patch at exit.
 
 No `sudo` or system-wide installation is performed. A hard kill or crash can prevent automatic cleanup; inspect `git -C third_party/mesa status --short` before retrying.
 
 ## Usage (after updating your local checkout to the feature branch)
 
     cd ~/Stela
+    bash -n scripts/fedora-gpu-host-tools.sh
+    bash scripts/fedora-gpu-host-tools.sh bash -c 'pkg-config --modversion libdrm LLVMSPIRVLib'
     bash scripts/fedora-gpu-host-tools.sh cargo xtask gpu nvk --jobs 4
 
-This may be a substantial GPU build. The wrapper has passed shell syntax validation, but its full Stela integration remains **unverified** until a Fedora run confirms it. Do not merge this draft just because unrelated CI jobs pass.
+This may be a substantial GPU build. The latest wrapper changes require a fresh `bash -n` syntax check and a Fedora smoke test. Full Stela integration remains **unverified** until a normal build confirms it. Do not merge this draft just because unrelated CI jobs pass.
 
 Inspect the result:
 
