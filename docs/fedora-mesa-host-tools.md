@@ -37,6 +37,6 @@ Inspect the result:
 
     git status --short --branch
     git -C third_party/mesa status --short
-    find target/gpu/clc/build/src/compiler -type f \\( -name mesa_clc -o -name vtn_bindgen2 \\) -print
+    find target/gpu/clc/build/src/compiler -type f \( -name mesa_clc -o -name vtn_bindgen2 \) -print
 
 If the build fails, retain `target/gpu/clc/meson-log.txt` or `ninja-log.txt` and report the first error. Do not reset/clean submodules or remove existing binaries merely to retry.
